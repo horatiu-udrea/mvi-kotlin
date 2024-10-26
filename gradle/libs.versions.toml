@@ -1,0 +1,21 @@
+[versions]
+agp = "8.5.2"
+kotlin = "2.0.20"
+nexus-publish = "2.0.0"
+android-minSdk = "24"
+android-compileSdk = "34"
+coroutines = "1.9.0"
+lifecycle-version = "2.8.6"
+kotest = "6.0.0.M1"
+
+[libraries]
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+androidx-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle-version" }
+kotest = {module="io.kotest:kotest-runner-junit5", version.ref="kotest"}
+
+[plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
