@@ -31,8 +31,7 @@ class ProductsViewModel(dependencies: D) : MVIViewModel<S, I, D>(initialState = 
         sendIntent: (I) -> Unit
     ) = Unit
 
-    // Optional if you use a default to log exceptions and watch the log window
-    // You can still use this for debugging or reporting critical errors to users via an intent
+    // Override this for debugging or reporting critical errors to users via an intent
     override fun onException(
         intent: I,
         exception: Throwable,
@@ -43,7 +42,7 @@ class ProductsViewModel(dependencies: D) : MVIViewModel<S, I, D>(initialState = 
 }
 
 data class ProductsState(
-    val products: List<Product> = emptyList()
+    val products: List<Product>? = null
 )
 
 data class Product(val id: Int, val name: String, val price: Double)
@@ -52,7 +51,7 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
     data object RefreshProducts : I, CancelCurrentAndRun<S, I, D>({ state ->
         // Loading products, no description provided when it's trivial
         // Make sure to import extension function
-        state.change { oldState -> oldState.copy(products = emptyList()) }
+        state.change { oldState -> oldState.copy(products = null) }
 
         // Access dependencies from scope
         val products = getProductsUseCase()
@@ -67,15 +66,15 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
         // Access current state and use it.
         // Do this only when you need up-to-date info,
         // otherwise include values in the intent data class and send them from UI
-        val productNumber = state.read("Read current number of products") { it.products.size }
-        trackProductNumberUseCase(productNumber)
+        val productNumber = state.read("Read current number of products") { it.products?.size }
+        trackProductNumberUseCase(productNumber ?: 0)
 
         buyProductUseCase(product)
 
         // Express the reason for which the state was not changed
         state.keep("Bought product, refreshing products now")
 
-        // Use other intents if needed
+        // Use other intents if needed. Does not suspend, only schedules intent handling.
         state.schedule(RefreshProducts)
     })
 }

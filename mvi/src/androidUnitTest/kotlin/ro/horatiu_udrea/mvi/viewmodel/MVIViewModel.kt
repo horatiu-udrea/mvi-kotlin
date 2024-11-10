@@ -68,6 +68,13 @@ abstract class MVIViewModel<State, Intent : IntentHandler<State, Intent, Depende
         exception: Throwable,
         sendIntent: (Intent) -> Unit
     ) {
-        Log.e(this::class.simpleName, "Unhandled exception when handling intent ${intent::class.simpleName}", exception)
+        if (debugMode) throw exception // Crash app in debug mode to find bugs easier in tests (manual + automated)
+        else Log.e(
+            this::class.simpleName,
+            "Unhandled exception when handling intent ${intent::class.simpleName}",
+            exception
+        )
     }
 }
+
+private const val debugMode = true // Change this depending on build type

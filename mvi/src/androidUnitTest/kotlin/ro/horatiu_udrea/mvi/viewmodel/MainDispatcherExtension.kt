@@ -1,4 +1,4 @@
-package ro.horatiu_udrea.mvi
+package ro.horatiu_udrea.mvi.viewmodel
 
 import io.kotest.core.listeners.AfterSpecListener
 import io.kotest.core.listeners.BeforeSpecListener
