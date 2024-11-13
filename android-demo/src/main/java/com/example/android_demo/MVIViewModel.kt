@@ -1,4 +1,4 @@
-package ro.horatiu_udrea.mvi.viewmodel
+package com.example.android_demo
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -9,12 +9,21 @@ import ro.horatiu_udrea.mvi.MVIComponent
 import ro.horatiu_udrea.mvi.base.BaseMVIComponent
 import ro.horatiu_udrea.mvi.base.IntentHandler
 
+/**
+ * Base class for Model-View-Intent (MVI) view models.
+ *
+ * @param State The type representing the state of the component.
+ * @param Intent The type representing the intents that can be sent to the component.
+ * @param Dependencies The type representing the dependencies required by the component.
+ * @param initialState The initial state of the component.
+ * @param dependencies The dependencies required by the component.
+ */
 abstract class MVIViewModel<State, Intent : IntentHandler<State, Intent, Dependencies>, Dependencies>(
     initialState: State,
     dependencies: Dependencies,
 ) : ViewModel(), MVIComponent<State, Intent> {
 
-    // We need to create the mviComponent inside the constructor because otherwise we cannot get access to viewModelScope
+    // We need to create the MVI component inside the constructor because otherwise we cannot get access to viewModelScope
     private val mviComponent: MVIComponent<State, Intent> =
         object : BaseMVIComponent<State, Intent, Dependencies>(
             coroutineScope = viewModelScope,

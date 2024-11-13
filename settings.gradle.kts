@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "mvi-kotlin"
 include(":mvi")
+include(":android-demo")

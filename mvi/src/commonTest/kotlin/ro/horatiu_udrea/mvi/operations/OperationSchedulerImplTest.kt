@@ -1,4 +1,4 @@
-package ro.horatiu_udrea.mvi.scheduler
+package ro.horatiu_udrea.mvi.operations
 
 import io.kotest.core.spec.style.FeatureSpec
 import io.kotest.core.test.testCoroutineScheduler
@@ -9,7 +9,6 @@ import io.kotest.matchers.shouldNot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import ro.horatiu_udrea.mvi.operations.OperationSchedulerImpl
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

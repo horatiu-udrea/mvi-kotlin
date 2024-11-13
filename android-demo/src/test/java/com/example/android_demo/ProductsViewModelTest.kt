@@ -1,5 +1,8 @@
-package ro.horatiu_udrea.mvi.viewmodel
+package com.example.android_demo
 
+import com.example.android_demo.util.MainDispatcherExtension
+import com.example.android_demo.util.testIntent
+import com.example.android_demo.util.testViewModel
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.beEmpty
 import io.kotest.matchers.should
@@ -16,7 +19,7 @@ class ProductsViewModelTest : BehaviorSpec({
 
     val dependencies = D(
         getProductsUseCase = { productList },
-        buyProductUseCase = { },
+        buyProductUseCase = { true },
         trackProductNumberUseCase = {}
     )
 
@@ -24,19 +27,22 @@ class ProductsViewModelTest : BehaviorSpec({
     Context("I create a ProductsViewModel and it can fetch products") {
         Given("I create a ProductsViewModel") {
             testViewModel(ProductsViewModel(dependencies)) {
-                Then("Products are loading") {
-                    state.products shouldBe null
+                Then("Products are not loading") {
+                    state.products shouldBe emptyList()
+                    state.productsLoading shouldBe false
                 }
                 When("I refresh products") {
                     sendIntent(ProductsIntent.RefreshProducts)
                     Then("Products are in the list") {
                         state.products shouldBe productList
+                        state.productsLoading shouldBe false
                     }
                 }
                 When("I refresh products again") {
                     sendIntent(ProductsIntent.RefreshProducts)
                     Then("Products are still in the list") {
                         state.products shouldBe productList
+                        state.productsLoading shouldBe false
                     }
                 }
             }
@@ -51,12 +57,12 @@ class ProductsViewModelTest : BehaviorSpec({
                 val (producedStates, scheduledIntents) = testIntent(
                     ProductsIntent.RefreshProducts,
                     dependencies,
-                    initialState = ProductsState(emptyList())
+                    initialState = ProductsState(products = emptyList(), productsLoading = false)
                 )
                 Then("Products were loading and now are available") {
                     producedStates shouldBe listOf(
-                        ProductsState(products = null),
-                        ProductsState(products = productList)
+                        ProductsState(products = emptyList(), productsLoading = true),
+                        ProductsState(products = productList, productsLoading = false)
                     )
                 }
                 Then("There are no side effects") {

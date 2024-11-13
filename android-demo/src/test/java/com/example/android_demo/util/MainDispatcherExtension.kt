@@ -1,4 +1,4 @@
-package ro.horatiu_udrea.mvi.viewmodel
+package com.example.android_demo.util
 
 import io.kotest.core.listeners.AfterSpecListener
 import io.kotest.core.listeners.BeforeSpecListener

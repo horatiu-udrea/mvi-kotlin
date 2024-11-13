@@ -1,5 +1,7 @@
-package ro.horatiu_udrea.mvi.viewmodel
+package com.example.android_demo.util
 
+import com.example.android_demo.I
+import com.example.android_demo.MVIViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import ro.horatiu_udrea.mvi.base.IntentHandler

@@ -17,10 +17,10 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-//    iosX64()
-//    iosArm64()
-//    iosSimulatorArm64()
-//    linuxX64()
+   // iosX64()
+   // iosArm64()
+   // iosSimulatorArm64()
+   // linuxX64()
 
     sourceSets {
         val commonMain by getting {
@@ -33,11 +33,6 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotest)
                 implementation(libs.kotlinx.coroutines.test)
-            }
-        }
-        val androidUnitTest by getting {
-            dependencies {
-                implementation(libs.androidx.viewmodel)
             }
         }
     }
