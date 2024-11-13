@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "ro.horatiu-udrea"
-    version = "0.3.0"
+    version = "0.1.0"
 }
 
 nexusPublishing {

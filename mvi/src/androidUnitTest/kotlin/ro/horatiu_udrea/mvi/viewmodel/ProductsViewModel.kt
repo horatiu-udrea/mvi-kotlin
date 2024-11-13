@@ -1,11 +1,8 @@
 package ro.horatiu_udrea.mvi.viewmodel
 
 import ro.horatiu_udrea.mvi.base.IntentHandler
-import ro.horatiu_udrea.mvi.handlers.CancelCurrentAndRun
-import ro.horatiu_udrea.mvi.handlers.RunInParallel
-import ro.horatiu_udrea.mvi.handlers.keep
-import ro.horatiu_udrea.mvi.handlers.change
-import ro.horatiu_udrea.mvi.handlers.read
+import ro.horatiu_udrea.mvi.handlers.CancelCurrentThenRun
+import ro.horatiu_udrea.mvi.handlers.Run
 
 // Use "Go to definition" to easily navigate sections
 typealias S = ProductsState
@@ -48,9 +45,8 @@ data class ProductsState(
 data class Product(val id: Int, val name: String, val price: Double)
 
 sealed interface ProductsIntent : IntentHandler<S, I, D> {
-    data object RefreshProducts : I, CancelCurrentAndRun<S, I, D>({ state ->
-        // Loading products, no description provided when it's trivial
-        // Make sure to import extension function
+    data object RefreshProducts : I, CancelCurrentThenRun<S, I, D>({ state ->
+        // Change state to loading products, no description provided when it's trivial
         state.change { oldState -> oldState.copy(products = null) }
 
         // Access dependencies from scope
@@ -62,7 +58,7 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
         }
     })
 
-    data class BuyProduct(val product: Product) : I, RunInParallel<S, I, D>({ state ->
+    data class BuyProduct(val product: Product) : I, Run<S, I, D>({ state ->
         // Access current state and use it.
         // Do this only when you need up-to-date info,
         // otherwise include values in the intent data class and send them from UI

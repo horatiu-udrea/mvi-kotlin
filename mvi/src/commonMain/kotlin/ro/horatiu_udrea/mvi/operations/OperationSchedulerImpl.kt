@@ -3,11 +3,12 @@ package ro.horatiu_udrea.mvi.operations
 import kotlinx.coroutines.*
 
 /**
- * A class that manages the launch of coroutines based on a key.
+ * A component that schedules operations with keys of type [K].
  * All methods are thread-safe.
- * @param syncDispatcher The coroutine dispatcher used to synchronize the operations.
+ *
+ * @param syncDispatcher The coroutine dispatcher used to synchronize operations.
  */
-public class OperationsImpl<in K>(syncDispatcher: CoroutineDispatcher) : Operations<K> {
+public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) : OperationScheduler<K> {
 
     /**
      * The dispatcher used to synchronize the operations.
@@ -21,7 +22,6 @@ public class OperationsImpl<in K>(syncDispatcher: CoroutineDispatcher) : Operati
 
     /**
      * Runs a coroutine if there is no other running for the given key.
-     * The method is thread-safe.
      */
     override suspend fun runIfNotRunning(
         key: K,
@@ -45,7 +45,6 @@ public class OperationsImpl<in K>(syncDispatcher: CoroutineDispatcher) : Operati
     /**
      * Waits for the current coroutine for the given key to finish (if any)
      * and runs a new one afterward.
-     * The method is thread-safe.
      */
     override suspend fun runAfterCurrent(
         key: K,
@@ -74,9 +73,8 @@ public class OperationsImpl<in K>(syncDispatcher: CoroutineDispatcher) : Operati
 
     /**
      * Cancels the current coroutine for the given key (if any) and runs a new one.
-     * The method is thread-safe.
      */
-    override suspend fun cancelCurrentAndRun(
+    override suspend fun cancelCurrentThenRun(
         key: K,
         block: suspend () -> Unit
     ) {
@@ -105,7 +103,6 @@ public class OperationsImpl<in K>(syncDispatcher: CoroutineDispatcher) : Operati
     /**
      * Cancels the current coroutine for the given key (if any).
      * Does not wait for the job to finish its execution.
-     * The method is thread-safe.
      */
     override suspend fun cancel(key: K) {
         withContext(safeSyncDispatcher) {

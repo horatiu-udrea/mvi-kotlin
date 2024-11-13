@@ -6,9 +6,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ro.horatiu_udrea.mvi.MVIComponent
-import ro.horatiu_udrea.mvi.operations.OperationsImpl
+import ro.horatiu_udrea.mvi.operations.OperationSchedulerImpl
 import kotlin.reflect.KClass
 
+/**
+ * Base class for Model-View-Intent (MVI) components.
+ *
+ * @param State The type representing the state of the component.
+ * @param Intent The type representing the intents that can be sent to the component.
+ * @param Dependencies The type representing the dependencies required by the component.
+ * @param initialState The initial state of the component.
+ * @param coroutineScope The coroutine scope in which the component operates.
+ * @param mainDispatcher The main dispatcher for coroutine execution.
+ * @param dependencies The dependencies required by the component.
+ */
 public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Intent, in Dependencies>, in Dependencies>(
     initialState: State,
     coroutineScope: CoroutineScope,
@@ -16,20 +27,38 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
     private val dependencies: Dependencies,
 ) : MVIComponent<State, Intent> {
 
+    /**
+     * Dispatcher with limited parallelism for synchronization.
+     */
     private val syncDispatcher = mainDispatcher.limitedParallelism(1)
 
+    /**
+     * Coroutine scope for managing coroutines within the component.
+     */
     private val coroutineScope = CoroutineScope(
         SupervisorJob(parent = coroutineScope.coroutineContext[Job.Key]) +
                 syncDispatcher +
                 CoroutineName(this::class.simpleName ?: "BaseMVIComponent")
     )
 
+    /**
+     * Mutable state flow to hold the current state.
+     */
     private val mutableState: MutableStateFlow<State> = MutableStateFlow(initialState)
 
-    private val operations by lazy(LazyThreadSafetyMode.NONE) { OperationsImpl<KClass<out Intent>>(syncDispatcher) }
+    /**
+     * Used for scheduling intent handlers by key.
+     */
+    private val scheduler = OperationSchedulerImpl<KClass<out Intent>>(syncDispatcher)
 
+    /**
+     * State emitted from this component.
+     */
     override val state: StateFlow<State> = mutableState.asStateFlow()
 
+    /**
+     * Send an [intent] that will be handled by the component by updating the [state].
+     */
     override fun sendIntent(intent: Intent) {
         onIntent(intent, ::sendIntent)
         coroutineScope.launch {
@@ -37,7 +66,7 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
                 intent.handle(
                     intent = intent,
                     dependencies = dependencies,
-                    operations = operations,
+                    scheduler = scheduler,
                     changeState = { stateChangeHandler ->
                         withContext(syncDispatcher) {
                             mutableState.update { oldState ->
@@ -64,18 +93,27 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
     }
 
     /**
-     * Use this to cancel handling of all intents.
+     * Cancel handling of all intents.
      * Cancellation will propagate to the provided [coroutineScope].
      */
     public fun cancelCoroutineScope(): Unit = coroutineScope.cancel()
 
     /**
-     * Runs when an intent is received. Can be used to send other intents.
+     * Called when an intent is received. Can be used to send other intents.
+     *
+     * @param intent The received intent.
+     * @param sendIntent Function to send another intent.
      */
     protected abstract fun onIntent(intent: Intent, sendIntent: (Intent) -> Unit)
 
     /**
-     * Runs when the state is changed. Can be used to send other intents.
+     * Called when the state is changed. Can be used to send other intents.
+     *
+     * @param description Description of the state change.
+     * @param sourceIntent The intent that caused the state change.
+     * @param oldState The previous state.
+     * @param newState The new state.
+     * @param sendIntent Function to send another intent.
      */
     protected abstract fun onStateChange(
         description: String,
@@ -86,7 +124,11 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
     )
 
     /**
-     * Runs when an exception was not handled. Can be used to send other intents.
+     * Called when an exception is not handled. Can be used to send other intents.
+     *
+     * @param intent The intent that caused the exception.
+     * @param exception The unhandled exception.
+     * @param sendIntent Function to send another intent.
      */
     protected abstract fun onException(
         intent: Intent,
