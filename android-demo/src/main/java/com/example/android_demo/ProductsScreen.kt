@@ -17,14 +17,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ro.horatiu_udrea.mvi.MVIComponent
 
 @Composable
-fun ProductsScreen() {
+fun ProductsScreen(onNavigateBack: () -> Unit) {
     val viewModel: MVIComponent<ProductsState, ProductsIntent> = viewModel<ProductsViewModel>()
 
-    ProductsComposable(viewModel.composableState(), viewModel::sendIntent)
+    ProductsComposable(viewModel.composableState(), viewModel::sendIntent, onNavigateBack)
 }
 
 @Composable
-fun ProductsComposable(state: ProductsState, sendIntent: (ProductsIntent) -> Unit) {
+fun ProductsComposable(
+    state: ProductsState,
+    sendIntent: (ProductsIntent) -> Unit,
+    onNavigateBack: () -> Unit
+) {
     Box {
         if (state.productsLoading) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -44,13 +48,32 @@ fun ProductsComposable(state: ProductsState, sendIntent: (ProductsIntent) -> Uni
             Text("Refresh products")
         }
 
-        if (state.showErrorDialog) {
+        // Show a dialog and dismiss the flag when user dismisses the dialog
+        if (state.purchaseError) {
             Dialog(
-                onDismissRequest = { sendIntent(ProductsIntent.DismissErrorDialog) }
+                onDismissRequest = { sendIntent(ProductsIntent.DismissPurchaseError) }
             ) {
                 Text("An error occurred while purchasing the product")
             }
         }
+
+        // OR
+
+        // Navigate back to the previous screen
+        Effect(
+            trigger = state.purchaseError,
+            effect = onNavigateBack,
+            dismissTrigger = { sendIntent(ProductsIntent.DismissPurchaseError) }
+        )
+
+        // Effect works with generic nullable objects as well, like enums or sealed hierarchies
+        /*
+        Effect(
+            trigger = state.navigateToPage,
+            effect = { page -> if(page is Page1) navigateToPage1() else navigateToPage2() },
+            dismissTrigger = { page -> sendIntent(ProductsIntent.DismissNavigateFlag) }
+        )
+         */
     }
 }
 
@@ -76,6 +99,7 @@ fun ProductsComposablePreview() {
                 Product(3, "Product 3", 3.0)
             )
         ),
-        sendIntent = {}
+        sendIntent = {},
+        onNavigateBack = {}
     )
 }

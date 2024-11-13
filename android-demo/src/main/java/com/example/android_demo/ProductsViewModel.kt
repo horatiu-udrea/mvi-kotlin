@@ -41,7 +41,7 @@ class ProductsViewModel(dependencies: D) : MVIViewModel<S, I, D>(initialState = 
 data class ProductsState(
     val products: List<Product> = emptyList(),
     val productsLoading: Boolean = false,
-    val showErrorDialog: Boolean = false
+    val purchaseError: Boolean = false
 )
 
 data class Product(val id: Int, val name: String, val price: Double)
@@ -61,7 +61,7 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
     })
 
     data class BuyProduct(val product: Product) : I, Run<S, I, D>(run@{ state ->
-        // Access current state and use it.
+        // Access the current state and use it.
         // Do this only when you need up-to-date info,
         // otherwise include values in the intent data class and send them from UI
         val productNumber = state.read("Read current number of products") { it.products.size }
@@ -72,7 +72,7 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
 
         if (!successful) {
             // Change state to loading products, no description provided when it's trivial
-            state.change("Product purchase not successful") { it.copy(showErrorDialog = true) }
+            state.change("Product purchase not successful") { it.copy(purchaseError = true) }
             return@run
         }
 
@@ -83,9 +83,9 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
         state.schedule(RefreshProducts)
     })
 
-    data object DismissErrorDialog : I, Run<S, I, D>({ state ->
-        // Change state to loading products, no description provided when it's trivial
-        state.change { it.copy(showErrorDialog = false) }
+    data object DismissPurchaseError : I, Run<S, I, D>({ state ->
+        // Change state with no description provided when it's trivial
+        state.change { it.copy(purchaseError = false) }
     })
 }
 
