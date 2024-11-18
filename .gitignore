@@ -1,6 +1,6 @@
 *.iml
 .gradle
-.idea
+.idea/*
 .DS_Store
 build
 captures
@@ -9,3 +9,6 @@ captures
 local.properties
 xcuserdata
 .kotlin
+
+!.idea/fileTemplates
+!.idea/fileTemplates/*

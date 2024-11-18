@@ -18,7 +18,7 @@ publishing {
 
         // Provide artifacts information required by Maven Central
         pom {
-            name.set("MVI component for Kotlin Multiplatform")
+            name.set("Model-View-Intent (MVI) components for Kotlin Multiplatform")
             description.set("Minimalistic MVI implementation for Kotlin Multiplatform")
             url.set("https://github.com/horatiu-udrea/mvi-kotlin")
 
@@ -32,8 +32,9 @@ publishing {
                 developer {
                     id.set("horatiu-udrea")
                     name.set("Horațiu Udrea")
-//                    organization.set("JetBrains")
-//                    organizationUrl.set("https://www.jetbrains.com")
+                    email.set("dev@horatiu-udrea.ro")
+                    // organization.set("")
+                    // organizationUrl.set("")
                 }
             }
             scm {

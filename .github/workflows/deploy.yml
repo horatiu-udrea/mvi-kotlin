@@ -5,6 +5,12 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
+# gh secret set OSSRH_GPG_SECRET_KEY -a actions --body "$(gpg --export-secret-key --armor "<your key id>")"
+# gh secret set OSSRH_GPG_SECRET_KEY_ID -a actions --body "<your key id>"
+# gh secret set OSSRH_GPG_SECRET_KEY_PASSWORD -a actions --body "<your key password>"
+# gh secret set OSSRH_PASSWORD -a actions --body "<your sonatype account password>"
+# gh secret set OSSRH_USERNAME -a actions --body "<your sonatype account username>"
+
 name: Deploy to central
 
 on: workflow_dispatch
@@ -60,4 +66,4 @@ jobs:
           -Psigning.gnupg.keyName='${{secrets.OSSRH_GPG_SECRET_KEY_ID}}'
           -PsonatypeUsername='${{secrets.OSSRH_USERNAME}}'
           -PsonatypePassword='${{secrets.OSSRH_PASSWORD}}'
-
+        # Add `releaseSonatypeStagingRepository` here to release
