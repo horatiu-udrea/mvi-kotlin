@@ -21,7 +21,7 @@ public abstract class RunIfNotRunning<State, Intent : IntentHandler<State, Inten
         intent: Intent,
         dependencies: Dependencies,
         scheduler: OperationScheduler<KClass<out Intent>>,
-        changeState: suspend (StateChangeRequest<State, Intent>) -> Unit,
+        changeState: (StateChangeRequest<State, Intent>) -> Unit,
         sendIntent: (Intent) -> Unit
     ) {
         scheduler.runIfNotRunning(intent::class) {

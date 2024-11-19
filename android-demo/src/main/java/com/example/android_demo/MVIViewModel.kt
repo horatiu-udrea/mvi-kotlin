@@ -3,7 +3,6 @@ package com.example.android_demo
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import ro.horatiu_udrea.mvi.MVIComponent
 import ro.horatiu_udrea.mvi.base.BaseMVIComponent
@@ -26,10 +25,9 @@ abstract class MVIViewModel<State, Intent : IntentHandler<State, Intent, Depende
     // We need to create the MVI component inside the constructor because otherwise we cannot get access to viewModelScope
     private val mviComponent: MVIComponent<State, Intent> =
         object : BaseMVIComponent<State, Intent, Dependencies>(
-            coroutineScope = viewModelScope,
-            mainDispatcher = Dispatchers.Main.immediate,
             initialState = initialState,
             dependencies = dependencies,
+            coroutineContext = viewModelScope.coroutineContext
         ) {
             override fun onIntent(intent: Intent, sendIntent: (Intent) -> Unit) =
                 this@MVIViewModel.onIntent(intent, sendIntent)

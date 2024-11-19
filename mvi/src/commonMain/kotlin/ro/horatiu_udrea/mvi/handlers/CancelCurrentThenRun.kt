@@ -21,7 +21,7 @@ public abstract class CancelCurrentThenRun<State, Intent : IntentHandler<State, 
         intent: Intent,
         dependencies: Dependencies,
         scheduler: OperationScheduler<KClass<out Intent>>,
-        changeState: suspend (StateChangeRequest<State, Intent>) -> Unit,
+        changeState: (StateChangeRequest<State, Intent>) -> Unit,
         sendIntent: (Intent) -> Unit
     ) {
         scheduler.cancelCurrentThenRun(intent::class) {

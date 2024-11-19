@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ro.horatiu_udrea.mvi.MVIComponent
 import ro.horatiu_udrea.mvi.operations.OperationSchedulerImpl
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
 /**
@@ -22,24 +24,14 @@ import kotlin.reflect.KClass
  */
 public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Intent, in Dependencies>, in Dependencies>(
     initialState: State,
-    coroutineScope: CoroutineScope,
-    mainDispatcher: CoroutineDispatcher,
     private val dependencies: Dependencies,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MVIComponent<State, Intent> {
-
-    /**
-     * Dispatcher with limited parallelism for synchronization.
-     */
-    private val syncDispatcher = mainDispatcher.limitedParallelism(1)
 
     /**
      * Coroutine scope for managing coroutines within the component.
      */
-    private val coroutineScope = CoroutineScope(
-        SupervisorJob(parent = coroutineScope.coroutineContext[Job.Key]) +
-                syncDispatcher +
-                CoroutineName(this::class.simpleName ?: "BaseMVIComponent")
-    )
+    private val coroutineScope = CoroutineScope(coroutineContext + SupervisorJob(parent = coroutineContext[Job]))
 
     /**
      * Mutable state flow to hold the current state.
@@ -49,7 +41,7 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
     /**
      * Used for scheduling intent handlers by key.
      */
-    private val scheduler = OperationSchedulerImpl<KClass<out Intent>>(syncDispatcher)
+    private val scheduler = OperationSchedulerImpl<KClass<out Intent>>()
 
     /**
      * State emitted from this component.
@@ -68,18 +60,16 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
                     dependencies = dependencies,
                     scheduler = scheduler,
                     changeState = { stateChangeHandler ->
-                        withContext(syncDispatcher) {
-                            mutableState.update { oldState ->
-                                val newState = stateChangeHandler.block(oldState)
-                                onStateChange(
-                                    stateChangeHandler.description,
-                                    intent,
-                                    oldState,
-                                    newState,
-                                    ::sendIntent
-                                )
-                                return@update newState
-                            }
+                        mutableState.update { oldState ->
+                            val newState = stateChangeHandler.block(oldState)
+                            onStateChange(
+                                stateChangeHandler.description,
+                                intent,
+                                oldState,
+                                newState,
+                                ::sendIntent
+                            )
+                            return@update newState
                         }
                     },
                     sendIntent = ::sendIntent
@@ -94,7 +84,7 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
 
     /**
      * Cancel handling of all intents.
-     * Cancellation will propagate to the provided [coroutineScope].
+     * Cancellation will propagate to job in the coroutineContext, if there is any.
      */
     public fun cancelCoroutineScope(): Unit = coroutineScope.cancel()
 

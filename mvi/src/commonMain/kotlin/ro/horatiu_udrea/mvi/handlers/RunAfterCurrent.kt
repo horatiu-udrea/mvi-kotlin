@@ -21,7 +21,7 @@ public abstract class RunAfterCurrent<State, Intent : IntentHandler<State, Inten
         intent: Intent,
         dependencies: Dependencies,
         scheduler: OperationScheduler<KClass<out Intent>>,
-        changeState: suspend (StateChangeRequest<State, Intent>) -> Unit,
+        changeState: (StateChangeRequest<State, Intent>) -> Unit,
         sendIntent: (Intent) -> Unit
     ) {
         scheduler.runAfterCurrent(intent::class) {

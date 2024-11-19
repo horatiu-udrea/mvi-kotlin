@@ -8,7 +8,6 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldNot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -19,7 +18,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         scenario("should run when no other operation for the same key is already running") {
             val key1 = Any()
             val key2 = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
@@ -45,7 +44,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should not run when another operation is already running for the same key") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
                 scheduler.runIfNotRunning(key, operation1::run)
@@ -69,7 +68,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should be cancellable") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation = Operation(1, 1000.milliseconds)
             launch {
@@ -94,7 +93,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         scenario("should run when no other operation for the same key is already running") {
             val key1 = Any()
             val key2 = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
@@ -120,7 +119,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should run after already running operation for the same key") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
@@ -151,7 +150,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should replace scheduled operation for the same key") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
@@ -189,7 +188,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should be cancellable") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation = Operation(1, 1000.milliseconds)
             launch {
@@ -214,7 +213,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         scenario("should run when no other operation for the same key is already running") {
             val key1 = Any()
             val key2 = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
@@ -240,7 +239,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should run and cancel current operation for the same key that is already running") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
@@ -270,7 +269,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("should be cancellable") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
 
             val operation = Operation(1, 1000.milliseconds)
             launch {
@@ -294,7 +293,7 @@ class OperationSchedulerImplTest : FeatureSpec({
     feature("operations should work when mixed") {
         scenario("run operation, schedule another, cancel and run a new one, without the previous ones completing") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
                 scheduler.runIfNotRunning(key, operation1::run)
@@ -322,7 +321,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("run operation, schedule another, cancel and run a new one, after the second one completes") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
                 scheduler.runIfNotRunning(key, operation1::run)
@@ -354,7 +353,7 @@ class OperationSchedulerImplTest : FeatureSpec({
         }
         scenario("run an operation an schedule another, then cancel everything") {
             val key = Any()
-            val scheduler = OperationSchedulerImpl<Any>(StandardTestDispatcher(testCoroutineScheduler))
+            val scheduler = OperationSchedulerImpl<Any>()
             val operation1 = Operation(1, 1000.milliseconds)
             launch {
                 scheduler.runIfNotRunning(key, operation1::run)

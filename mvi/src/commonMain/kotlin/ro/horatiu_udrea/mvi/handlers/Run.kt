@@ -20,7 +20,7 @@ public abstract class Run<State, Intent : IntentHandler<State, Intent, Dependenc
         intent: Intent,
         dependencies: Dependencies,
         scheduler: OperationScheduler<KClass<out Intent>>,
-        changeState: suspend (StateChangeRequest<State, Intent>) -> Unit,
+        changeState: (StateChangeRequest<State, Intent>) -> Unit,
         sendIntent: (Intent) -> Unit
     ) {
         dependencies.handle(

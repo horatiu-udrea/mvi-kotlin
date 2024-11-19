@@ -24,7 +24,7 @@ public fun interface IntentHandler<State, Intent : Any, Dependencies> {
         intent: Intent,
         dependencies: Dependencies,
         scheduler: OperationScheduler<KClass<out Intent>>,
-        changeState: suspend (StateChangeRequest<State, Intent>) -> Unit,
+        changeState: (StateChangeRequest<State, Intent>) -> Unit,
         sendIntent: (Intent) -> Unit
     )
 }

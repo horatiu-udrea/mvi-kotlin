@@ -1,24 +1,24 @@
 package ro.horatiu_udrea.mvi.operations
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * A component that schedules operations with keys of type [K].
  * All methods are thread-safe.
- *
- * @param syncDispatcher The coroutine dispatcher used to synchronize operations.
  */
-public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) : OperationScheduler<K> {
-
-    /**
-     * The dispatcher used to synchronize the operations.
-     */
-    private val safeSyncDispatcher = syncDispatcher.limitedParallelism(1)
+public class OperationSchedulerImpl<in K> : OperationScheduler<K> {
 
     /**
      * A map that holds the current jobs for each key.
      */
     private val jobMap: MutableMap<K, Jobs> = mutableMapOf()
+
+    /**
+     * Mutex to serialize access to the job map
+     */
+    private val mutex = Mutex()
 
     /**
      * Runs a coroutine if there is no other running for the given key.
@@ -28,12 +28,10 @@ public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) :
         block: suspend () -> Unit
     ) {
         coroutineScope {
-            val parentScope = this
-            withContext(safeSyncDispatcher) {
+            mutex.withLock {
                 val jobs = jobMap[key]
                 if (jobs == null) {
-                    // launching in parent scope
-                    parentScope.launchLazyCoroutine(key, block).also {
+                    launchLazyCoroutine(key, block).also {
                         jobMap[key] = Jobs(executingJob = it, pendingJob = null)
                         it.start()
                     }
@@ -51,19 +49,16 @@ public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) :
         block: suspend () -> Unit
     ) {
         coroutineScope {
-            val parentScope = this
-            withContext(safeSyncDispatcher) {
+            mutex.withLock {
                 val jobs = jobMap[key]
                 if (jobs == null) {
-                    // launching in parent scope
-                    parentScope.launchLazyCoroutine(key, block).also {
+                    launchLazyCoroutine(key, block).also {
                         jobMap[key] = Jobs(executingJob = it, pendingJob = null)
                         it.start()
                     }
                 } else {
                     val (executingJob, pendingJob) = jobs
-                    // launching in parent scope
-                    val newJob = parentScope.launchLazyCoroutine(key, block)
+                    val newJob = launchLazyCoroutine(key, block)
                     pendingJob?.cancel("New job was registered as pending", cause = null)
                     jobMap[key] = Jobs(executingJob, newJob)
                 }
@@ -80,17 +75,15 @@ public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) :
     ) {
         coroutineScope {
             val parentScope = this
-            withContext(safeSyncDispatcher) {
+            mutex.withLock {
                 val jobs = jobMap[key]
                 if (jobs == null) {
-                    // launching in parent scope
                     parentScope.launchLazyCoroutine(key, block).also {
                         jobMap[key] = Jobs(executingJob = it, pendingJob = null)
                         it.start()
                     }
                 } else {
                     val (executingJob, pendingJob) = jobs
-                    // launching in parent scope
                     val newJob = parentScope.launchLazyCoroutine(key, block)
                     pendingJob?.cancel("New job was registered as pending", cause = null)
                     jobMap[key] = Jobs(executingJob, newJob)
@@ -105,8 +98,8 @@ public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) :
      * Does not wait for the job to finish its execution.
      */
     override suspend fun cancel(key: K) {
-        withContext(safeSyncDispatcher) {
-            val (executingJob, pendingJob) = jobMap[key] ?: return@withContext
+        mutex.withLock {
+            val (executingJob, pendingJob) = jobMap[key] ?: return@withLock
             if (pendingJob != null) {
                 pendingJob.cancel()
                 jobMap[key] = Jobs(executingJob, pendingJob = null)
@@ -123,18 +116,20 @@ public class OperationSchedulerImpl<in K>(syncDispatcher: CoroutineDispatcher) :
             block()
         } finally {
             val currentJob = coroutineContext.job
-            withContext(safeSyncDispatcher + NonCancellable) {
-                val (executingJob, pendingJob) = jobMap[key]
-                    ?: error("Job was removed from map before cancellation")
+            withContext(NonCancellable) {
+                mutex.withLock {
+                    val (executingJob, pendingJob) = jobMap[key]
+                        ?: error("Job was removed from map before cancellation")
 
-                if (executingJob != currentJob)
-                    error("Job was replaced before cancellation")
+                    if (executingJob != currentJob)
+                        error("Job was replaced before cancellation")
 
-                if (pendingJob != null) {
-                    jobMap[key] = Jobs(executingJob = pendingJob, pendingJob = null)
-                    pendingJob.start()
-                } else {
-                    jobMap.remove(key)
+                    if (pendingJob != null) {
+                        jobMap[key] = Jobs(executingJob = pendingJob, pendingJob = null)
+                        pendingJob.start()
+                    } else {
+                        jobMap.remove(key)
+                    }
                 }
             }
         }
