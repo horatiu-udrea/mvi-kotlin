@@ -31,7 +31,8 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
-                implementation(libs.kotest)
+                implementation(libs.junit)
+                implementation(libs.kotest.assertions)
                 implementation(libs.kotlinx.coroutines.test)
             }
         }

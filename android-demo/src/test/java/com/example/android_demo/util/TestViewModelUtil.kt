@@ -2,19 +2,27 @@ package com.example.android_demo.util
 
 import com.example.android_demo.I
 import com.example.android_demo.MVIViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import ro.horatiu_udrea.mvi.base.IntentHandler
 import ro.horatiu_udrea.mvi.handlers.ComponentState
 import ro.horatiu_udrea.mvi.handlers.SimpleIntentHandler
 
-inline fun <S, I : IntentHandler<S, I, *>> testViewModel(
+inline fun <S, I : IntentHandler<S, I, *>> TestScope.testViewModel(
     viewModel: MVIViewModel<S, I, *>,
     block: TestViewModelScope<S, I>.() -> Unit
-) = TestViewModelScope(viewModel).block()
+) = TestViewModelScope(this, viewModel).block()
 
-class TestViewModelScope<S, I : IntentHandler<S, I, *>>(private val viewModel: MVIViewModel<S, I, *>) {
-    val state get() = viewModel.state.value
+class TestViewModelScope<S, I : IntentHandler<S, I, *>>(private val testScope: TestScope, private val viewModel: MVIViewModel<S, I, *>) {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val state: S
+        get() {
+            testScope.advanceUntilIdle()
+            return viewModel.state.value
+        }
 
     fun sendIntent(intent: I) = viewModel.sendIntent(intent)
 }

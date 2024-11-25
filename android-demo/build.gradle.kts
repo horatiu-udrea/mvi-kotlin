@@ -36,7 +36,8 @@ dependencies {
     implementation(libs.compose.tooling.preview)
     debugImplementation(libs.compose.tooling)
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotest)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotest.assertions)
     testImplementation(libs.kotlinx.coroutines.test)
 }
 
