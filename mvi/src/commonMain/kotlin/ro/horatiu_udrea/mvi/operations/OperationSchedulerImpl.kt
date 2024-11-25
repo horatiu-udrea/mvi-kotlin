@@ -8,7 +8,7 @@ import kotlinx.coroutines.sync.withLock
  * A component that schedules operations with keys of type [K].
  * All methods are thread-safe.
  */
-public class OperationSchedulerImpl<in K> : OperationScheduler<K> {
+internal class OperationSchedulerImpl<in K> : OperationScheduler<K> {
 
     /**
      * A map that holds the current jobs for each key.

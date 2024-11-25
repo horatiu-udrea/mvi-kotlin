@@ -18,9 +18,8 @@ import kotlin.reflect.KClass
  * @param Intent The type representing the intents that can be sent to the component.
  * @param Dependencies The type representing the dependencies required by the component.
  * @param initialState The initial state of the component.
- * @param coroutineScope The coroutine scope in which the component operates.
- * @param mainDispatcher The main dispatcher for coroutine execution.
  * @param dependencies The dependencies required by the component.
+ * @param coroutineContext The coroutine context in which the component operates.
  */
 public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Intent, in Dependencies>, in Dependencies>(
     initialState: State,
@@ -74,8 +73,9 @@ public abstract class BaseMVIComponent<State, Intent : IntentHandler<State, Inte
                     },
                     sendIntent = ::sendIntent
                 )
-            } catch (_: CancellationException) {
-                // ignore CancellationException
+            } catch (e: CancellationException) {
+                // Propagate CancellationException
+                throw e
             } catch (e: Throwable) {
                 onException(intent, e, ::sendIntent)
             }

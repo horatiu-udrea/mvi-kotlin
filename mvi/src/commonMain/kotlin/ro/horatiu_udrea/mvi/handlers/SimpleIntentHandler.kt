@@ -25,7 +25,7 @@ public fun interface SimpleIntentHandler<State, Intent, Dependencies> {
  * @param schedule Function to schedule the handling of an intent.
  */
 public data class ComponentState<State, Intent>(
-    private val change: suspend (description: String, block: (State) -> State) -> Unit,
+    private val change: (description: String, block: (State) -> State) -> Unit,
     private val schedule: (Intent) -> Unit
 ) {
     /**
@@ -34,7 +34,7 @@ public data class ComponentState<State, Intent>(
      * @param description Description of the state change.
      * @param block The function to change the state.
      */
-    public suspend fun change(description: String? = null, block: (State) -> State): Unit =
+    public fun change(description: String? = null, block: (State) -> State): Unit =
         change.invoke(description ?: "State changed with no description", block)
 
     /**
@@ -44,7 +44,7 @@ public data class ComponentState<State, Intent>(
      * @param block The function to read the state.
      * @return The result of the read operation.
      */
-    public suspend fun <R> read(
+    public fun <R> read(
         reason: String? = null,
         block: (State) -> R
     ): R {
@@ -65,7 +65,7 @@ public data class ComponentState<State, Intent>(
      *
      * @param reason Reason for keeping the same state.
      */
-    public suspend fun keep(reason: String) {
+    public fun keep(reason: String) {
         change("State not changed - $reason") { it }
     }
 
