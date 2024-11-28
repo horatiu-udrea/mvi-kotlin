@@ -6,9 +6,10 @@ android-minSdk = "24"
 android-compileSdk = "34"
 coroutines = "1.9.0"
 kotest = "6.0.0.M1"
-compose = "2024.10.01"
+compose = "2024.11.00"
 viewmodel = "2.8.7"
 junit = "5.11.3"
+dokka = "1.9.20"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -28,3 +29,4 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
