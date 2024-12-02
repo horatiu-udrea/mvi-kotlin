@@ -1,52 +1,46 @@
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.bundling.Jar
-import org.gradle.kotlin.dsl.`maven-publish`
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    `maven-publish`
-    signing
+    id("com.vanniktech.maven.publish")
 }
 
-publishing {
-    // Configure all publications
-    publications.withType<MavenPublication> {
-        // Stub javadoc.jar artifact
-        artifact(tasks.register("${name}JavadocJar", Jar::class) {
-            archiveClassifier.set("javadoc")
-            archiveAppendix.set(this@withType.name)
-        })
+mavenPublishing {
 
-        // Provide artifacts information required by Maven Central
-        pom {
-            name.set("Model-View-Intent (MVI) components for Kotlin Multiplatform")
-            description.set("Minimalistic MVI implementation for Kotlin Multiplatform")
-            url.set("https://github.com/horatiu-udrea/mvi-kotlin")
+    coordinates(
+        groupId = "ro.horatiu-udrea",
+        artifactId = "mvi",
+        version = "0.1.0"
+    )
+    // Provide artifacts information required by Maven Central
+    pom {
+        name.set("Model-View-Intent (MVI) components for Kotlin Multiplatform")
+        description.set("Minimalistic MVI implementation for Kotlin Multiplatform")
+        inceptionYear.set("2024")
+        url.set("https://github.com/horatiu-udrea/mvi-kotlin")
 
-            licenses {
-                license {
-                    name.set("MIT")
-                    url.set("https://opensource.org/licenses/MIT")
-                }
-            }
-            developers {
-                developer {
-                    id.set("horatiu-udrea")
-                    name.set("Horațiu Udrea")
-                    email.set("dev@horatiu-udrea.ro")
-                    // organization.set("")
-                    // organizationUrl.set("")
-                }
-            }
-            scm {
-                url.set("https://github.com/horatiu-udrea/mvi-kotlin")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
+                distribution.set("https://opensource.org/licenses/MIT")
             }
         }
+        developers {
+            developer {
+                id.set("horatiu-udrea")
+                name.set("Horațiu Udrea")
+                email.set("dev@horatiu-udrea.ro")
+                url.set("https://github.com/horatiu-udrea")
+            }
+        }
+        scm {
+            url.set("https://github.com/horatiu-udrea/mvi-kotlin")
+        }
     }
-}
 
-signing {
-    if (project.hasProperty("signing.gnupg.keyName")) {
-        useGpgCmd()
-        sign(publishing.publications)
-    }
+    // Configure publishing to Sonatype
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+
+    // Enable GPG signing for all publications
+    signAllPublications()
 }
