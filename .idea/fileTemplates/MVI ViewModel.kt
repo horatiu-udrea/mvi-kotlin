@@ -6,9 +6,9 @@ import ro.horatiu_udrea.mvi.base.IntentHandler
 import ro.horatiu_udrea.mvi.handlers.Run
 import ro.horatiu_udrea.mvi.handlers.RunIfNotRunning
 
-typealias S = ${VIEWMODEL_NAME}State
-typealias I = ${VIEWMODEL_NAME}Intent
-typealias D = ${VIEWMODEL_NAME}Dependencies
+internal typealias S = ${VIEWMODEL_NAME}State
+internal typealias I = ${VIEWMODEL_NAME}Intent
+internal typealias D = ${VIEWMODEL_NAME}Dependencies
 
 class ${VIEWMODEL_NAME}ViewModel(dependencies: D) : MVIViewModel<S, I, D>(initialState = ${VIEWMODEL_NAME}State(), dependencies) {
 

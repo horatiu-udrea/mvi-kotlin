@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * @property intentToCancel The class of the intent to be cancelled.
  */
 public abstract class CancelIntent<State, Intent : IntentHandler<State, Intent, Dependencies>, Dependencies>(
-    private val intentToCancel: KClass<Intent>
+    private val intentToCancel: KClass<out Intent>
 ) : IntentHandler<State, Intent, Dependencies> {
     override suspend fun handle(
         intent: Intent,

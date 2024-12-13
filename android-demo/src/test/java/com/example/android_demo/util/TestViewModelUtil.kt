@@ -1,6 +1,5 @@
 package com.example.android_demo.util
 
-import com.example.android_demo.I
 import com.example.android_demo.MVIViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +26,7 @@ class TestViewModelScope<S, I : IntentHandler<S, I, *>>(private val testScope: T
     fun sendIntent(intent: I) = viewModel.sendIntent(intent)
 }
 
-suspend fun <S, T : SimpleIntentHandler<S, I, D>, D> testIntent(
+suspend fun <S, I, T : SimpleIntentHandler<S, I, D>, D> testIntent(
     intent: T,
     dependencies: D,
     initialState: S
