@@ -23,14 +23,14 @@ Key highlights:
 In `build.gradle.kts` add:
 ```kotlin
 dependencies {
-    implementation("ro.horatiu-udrea:mvi:0.1.0")
+    implementation("ro.horatiu-udrea:mvi:0.1.1")
 }
 ```
 #### Using Version Catalog
 In `libs.versions.toml` add:
 ```toml
 [versions]
-mvi = "0.1.0"
+mvi = "0.1.1"
 
 [libraries]
 mvi = { module = "ro.horatiu-udrea:mvi", version.ref = "mvi" }
