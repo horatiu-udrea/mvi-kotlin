@@ -43,16 +43,24 @@ dependencies {
 ```
 
 ### Android Example
-Find full implementation in [android-demo sources](android-demo/src/main/java/com/example/android_demo) and tests for the components in [android-demo tests](android-demo/src/test/java/com/example/android_demo).
+Full implementation is in [android-demo sources](android-demo/src/main/java/com/example/android_demo) and tests for the components are in [android-demo tests](android-demo/src/test/java/com/example/android_demo).
 
-A template for Android Studio can be found [here](.idea/fileTemplates/MVI%20ViewModel.kt).
+You can also find a template for Android Studio [here](.idea/fileTemplates/MVI%20ViewModel.kt).
+
+Here is a description of the main components. They can either be in one single file or split into multiple files in the same package, for readability.
+#### The component aliases
+These exist to keep everything easy to read. They also help with navigating easily among components.
 
 ```kotlin
 // Use "Go to definition" to easily navigate sections
 typealias S = ProductsState
 typealias I = ProductsIntent
 typealias D = ProductsDependencies
+```
+#### The viewmodel itself
+The viewmodel itself doesn't define any logic, just the initial state. It has callbacks that can be used for debugging or observability.
 
+```kotlin
 class ProductsViewModel(dependencies: D) : MVIViewModel<S, I, D>(initialState = ProductsState(), dependencies) {
 
     // Put a breakpoint on the line with "Unit" and observe all received intents
@@ -81,7 +89,11 @@ class ProductsViewModel(dependencies: D) : MVIViewModel<S, I, D>(initialState = 
         super.onException(intent, exception, sendIntent)
     }
 }
+```
+#### The state
+The state is a simple data class, preferably immutable.
 
+```kotlin
 data class ProductsState(
     val products: List<Product> = emptyList(),
     val productsLoading: Boolean = false,
@@ -89,7 +101,13 @@ data class ProductsState(
 )
 
 data class Product(val id: Int, val name: String, val price: Double)
+```
+#### The intents
+Here are the intent definitions as immutable data objects and data classes. They also contain the logic to handle the intent.  
+The `state` object is used to change the state or schedule other intents, while `Run`,
+`RunIfNotRunning`, `RunAfterCurrent`, `CancelCurrentThenRun` and `CancelIntent` are used to control the scheduling of intent handlers.
 
+```kotlin
 sealed interface ProductsIntent : IntentHandler<S, I, D> {
     data object RefreshProducts : I, RunIfNotRunning<S, I, D>({ state ->
         // Change the state and provide a description
@@ -132,7 +150,10 @@ sealed interface ProductsIntent : IntentHandler<S, I, D> {
         state.change { it.copy(purchaseError = false) }
     })
 }
-
+```
+#### The dependencies
+The dependencies are grouped in a separate class and can be injected as normal.
+```kotlin
 // Group all dependencies here. This can be injected using your favorite DI tool.
 class ProductsDependencies(
     val getProductsUseCase: suspend () -> List<Product>,
