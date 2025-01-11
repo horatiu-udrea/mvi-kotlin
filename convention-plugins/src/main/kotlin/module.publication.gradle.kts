@@ -9,7 +9,7 @@ mavenPublishing {
     coordinates(
         groupId = "ro.horatiu-udrea",
         artifactId = "mvi",
-        version = "0.1.1"
+        version = "0.1.2"
     )
     // Provide artifacts information required by Maven Central
     pom {
