@@ -31,10 +31,9 @@ internal class OperationSchedulerImpl<in K> : OperationScheduler<K> {
             mutex.withLock {
                 val jobs = jobMap[key]
                 if (jobs == null) {
-                    launchLazyCoroutine(key, block).also {
-                        jobMap[key] = Jobs(executingJob = it, pendingJob = null)
-                        it.start()
-                    }
+                    val newJob = launchLazyCoroutine(key, block)
+                    jobMap[key] = Jobs(executingJob = newJob, pendingJob = null)
+                    newJob.start()
                 }
             }
         }
@@ -52,10 +51,9 @@ internal class OperationSchedulerImpl<in K> : OperationScheduler<K> {
             mutex.withLock {
                 val jobs = jobMap[key]
                 if (jobs == null) {
-                    launchLazyCoroutine(key, block).also {
-                        jobMap[key] = Jobs(executingJob = it, pendingJob = null)
-                        it.start()
-                    }
+                    val newJob = launchLazyCoroutine(key, block)
+                    jobMap[key] = Jobs(executingJob = newJob, pendingJob = null)
+                    newJob.start()
                 } else {
                     val (executingJob, pendingJob) = jobs
                     val newJob = launchLazyCoroutine(key, block)
@@ -74,20 +72,20 @@ internal class OperationSchedulerImpl<in K> : OperationScheduler<K> {
         block: suspend () -> Unit
     ) {
         coroutineScope {
-            val parentScope = this
             mutex.withLock {
                 val jobs = jobMap[key]
                 if (jobs == null) {
-                    parentScope.launchLazyCoroutine(key, block).also {
-                        jobMap[key] = Jobs(executingJob = it, pendingJob = null)
-                        it.start()
-                    }
+                    val newJob = launchLazyCoroutine(key, block)
+                    jobMap[key] = Jobs(executingJob = newJob, pendingJob = null)
+                    newJob.start()
                 } else {
                     val (executingJob, pendingJob) = jobs
-                    val newJob = parentScope.launchLazyCoroutine(key, block)
-                    pendingJob?.cancel("New job was registered as pending", cause = null)
-                    jobMap[key] = Jobs(executingJob, newJob)
                     executingJob.cancel("Cancelling in favor of new job", cause = null)
+                    pendingJob?.cancel("New job was registered as pending", cause = null)
+
+                    val newJob = launchLazyCoroutine(key, block)
+                    jobMap[key] = Jobs(executingJob = newJob, pendingJob = null)
+                    newJob.start()
                 }
             }
         }
@@ -100,11 +98,9 @@ internal class OperationSchedulerImpl<in K> : OperationScheduler<K> {
     override suspend fun cancel(key: K) {
         mutex.withLock {
             val (executingJob, pendingJob) = jobMap[key] ?: return@withLock
-            if (pendingJob != null) {
-                pendingJob.cancel()
-                jobMap[key] = Jobs(executingJob, pendingJob = null)
-            }
-            executingJob.cancel()
+            executingJob.cancel("Cancelled on request")
+            pendingJob?.cancel("Cancelled on request")
+            jobMap.remove(key)
         }
     }
 
@@ -118,11 +114,8 @@ internal class OperationSchedulerImpl<in K> : OperationScheduler<K> {
             val currentJob = coroutineContext.job
             withContext(NonCancellable) {
                 mutex.withLock {
-                    val (executingJob, pendingJob) = jobMap[key]
-                        ?: error("Job was removed from map before cancellation")
-
-                    if (executingJob != currentJob)
-                        error("Job was replaced before cancellation")
+                    val (executingJob, pendingJob) = jobMap[key] ?: return@withLock
+                    if (executingJob != currentJob) return@withLock
 
                     if (pendingJob != null) {
                         jobMap[key] = Jobs(executingJob = pendingJob, pendingJob = null)

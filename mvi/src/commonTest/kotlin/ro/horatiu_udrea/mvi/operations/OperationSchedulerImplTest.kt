@@ -269,6 +269,27 @@ class OperationSchedulerImplTest {
         }
 
     @Test
+    fun `cancelCurrentAndRun should run even when previous operation didn't start`() =
+        runTest {
+            val key = Any()
+            val scheduler = OperationSchedulerImpl<Any>()
+
+            val operation1 = Operation(1, 1000.milliseconds)
+            launch {
+                scheduler.cancelCurrentThenRun(key, operation1::run)
+            }
+
+            val operation2 = Operation(2, 500.milliseconds)
+            launch {
+                scheduler.cancelCurrentThenRun(key, operation2::run)
+            }
+
+            advanceUntilIdle()
+            operation1 shouldNot beCompleted()
+            operation2 should beCompleted()
+        }
+
+    @Test
     fun `cancelCurrentAndRun should be cancellable`() = runTest {
         val key = Any()
         val scheduler = OperationSchedulerImpl<Any>()
